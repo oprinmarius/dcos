@@ -81,6 +81,7 @@ def test_if_all_exhibitors_are_in_sync(dcos_api_session):
         assert correct_data == tested_data
 
 
+@pytest.mark.supportedwindows
 def test_mesos_agent_role_assignment(dcos_api_session):
     state_endpoint = '/state.json'
     for agent in dcos_api_session.public_slaves:

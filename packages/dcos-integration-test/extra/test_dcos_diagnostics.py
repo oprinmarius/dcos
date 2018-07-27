@@ -29,7 +29,7 @@ def check_json(response):
     assert len(json_response) > 0, 'Empty JSON returned from dcos-diagnostics request'
     return json_response
 
-
+@pytest.mark.supportedwindows
 @retrying.retry(wait_fixed=2000, stop_max_delay=LATENCY * 1000)
 def test_dcos_diagnostics_health(dcos_api_session):
     """
@@ -112,6 +112,7 @@ def validate_node(nodes):
         assert node['role'], 'role cannot be empty'
 
 
+@pytest.mark.supportedwindows
 @retrying.retry(wait_fixed=2000, stop_max_delay=LATENCY * 1000)
 def test_dcos_diagnostics_nodes(dcos_api_session):
     """
@@ -119,6 +120,8 @@ def test_dcos_diagnostics_nodes(dcos_api_session):
     """
     for master in dcos_api_session.masters:
         response = check_json(dcos_api_session.health.get('/nodes', node=master))
+        # print("Master :", master, "Response :", response)
+        print(dcos_api_session.all_slaves)
         assert len(response) == 1, 'nodes response must have only one field: nodes'
         assert 'nodes' in response
         assert isinstance(response['nodes'], list)
@@ -130,6 +133,7 @@ def test_dcos_diagnostics_nodes(dcos_api_session):
         validate_node(response['nodes'])
 
 
+@pytest.mark.supportedwindows
 def test_dcos_diagnostics_nodes_node(dcos_api_session):
     """
     test a specific node enpoint /system/health/v1/nodes/<node>
@@ -178,7 +182,7 @@ def validate_unit(unit):
     assert unit['description'], 'description field cannot be empty'
     assert unit['help'], 'help field cannot be empty'
 
-
+@pytest.mark.supportedwindows
 def test_dcos_diagnostics_nodes_node_units(dcos_api_session):
     """
     test a list of units from a specific node, endpoint /system/health/v1/nodes/<node>/units
@@ -196,6 +200,7 @@ def test_dcos_diagnostics_nodes_node_units(dcos_api_session):
             validate_units(units_response['units'])
 
 
+@pytest.mark.supportedwindows
 def test_dcos_diagnostics_nodes_node_units_unit(dcos_api_session):
     """
     test a specific unit for a specific node, endpoint /system/health/v1/nodes/<node>/units/<unit>
@@ -212,6 +217,7 @@ def test_dcos_diagnostics_nodes_node_units_unit(dcos_api_session):
                     check_json(dcos_api_session.health.get('/nodes/{}/units/{}'.format(node, unit_id), node=master)))
 
 
+@pytest.mark.supportedwindows
 @retrying.retry(wait_fixed=2000, stop_max_delay=LATENCY * 1000)
 def test_dcos_diagnostics_units(dcos_api_session):
     """
@@ -241,6 +247,7 @@ def test_dcos_diagnostics_units(dcos_api_session):
                                                 'puller, missing: {}'.format(diff))
 
 
+@pytest.mark.supportedwindows
 @retrying.retry(wait_fixed=2000, stop_max_delay=LATENCY * 1000)
 def test_systemd_units_health(dcos_api_session):
     """
@@ -272,6 +279,7 @@ def test_systemd_units_health(dcos_api_session):
         raise AssertionError('\n'.join(unhealthy_output))
 
 
+@pytest.mark.supportedwindows
 def test_dcos_diagnostics_units_unit(dcos_api_session):
     """
     test a unit response in a right format, endpoint: /system/health/v1/units/<unit>
@@ -300,6 +308,7 @@ def make_nodes_ip_map(dcos_api_session):
     return node_private_public_ip_map
 
 
+@pytest.mark.supportedwindows
 @retrying.retry(wait_fixed=2000, stop_max_delay=LATENCY * 1000)
 def test_dcos_diagnostics_units_unit_nodes(dcos_api_session):
     """
@@ -336,14 +345,30 @@ def test_dcos_diagnostics_units_unit_nodes(dcos_api_session):
             set(master_nodes).symmetric_difference(set(dcos_api_session.masters))
         )
 
-        agent_nodes_response = check_json(
+        linux_agent_nodes_response = check_json(
             dcos_api_session.health.get('/units/dcos-mesos-slave.service/nodes', node=master))
 
-        agent_nodes = get_nodes_from_response(agent_nodes_response)
+        linux_agent_nodes = get_nodes_from_response(linux_agent_nodes_response)
 
-        assert len(agent_nodes) == len(dcos_api_session.slaves), '{} != {}'.format(agent_nodes, dcos_api_session.slaves)
+        windows_agent_nodes_response = check_json(
+            dcos_api_session.health.get('/units/dcos-mesos-slave/nodes', node=master))
+
+        windows_agent_nodes = get_nodes_from_response(windows_agent_nodes_response)
+        linux_public_agent_nodes_response = check_json(
+            dcos_api_session.health.get('/units/dcos-mesos-slave-public.service/nodes', node=master))
+
+        linux_public_agent_nodes = get_nodes_from_response(linux_public_agent_nodes_response)
+
+        windows_public_agent_nodes_response = check_json(
+            dcos_api_session.health.get('/units/dcos-mesos-slave-public/nodes', node=master))
+
+        windows_public_agent_nodes = get_nodes_from_response(windows_public_agent_nodes_response)
+        assert len(linux_agent_nodes) + len(windows_agent_nodes) == len(dcos_api_session.slaves), '{} + {} != {}'.format(linux_agent_nodes, windows_agent_nodes, dcos_api_session.slaves)
+
+        assert len(linux_public_agent_nodes) + len(windows_public_agent_nodes) == len(dcos_api_session.public_slaves), '{} + {} != {}'.format(linux_public_agent_nodes, windows_public_agent_nodes, dcos_api_session.public_slaves)
 
 
+@pytest.mark.supportedwindows
 def test_dcos_diagnostics_units_unit_nodes_node(dcos_api_session):
     """
     test a specific node for a specific unit, endpoint /system/health/v1/units/<unit>/nodes/<node>
@@ -459,7 +484,6 @@ def test_dcos_diagnostics_bundle_create(dcos_api_session):
         'time': None,
         'value': 0
     }
-
     wait_for_diagnostics_job(dcos_api_session, last_datapoint)
     wait_for_diagnostics_list(dcos_api_session)
 
@@ -477,6 +501,7 @@ def verify_unit_response(zip_ext_file, min_lines):
         min_lines, unit_output)
 
 
+#@pytest.mark.supportedwindows
 @retrying.retry(wait_fixed=2000, stop_max_delay=LATENCY * 1000)
 def test_dcos_diagnostics_bundle_download_and_extract(dcos_api_session):
     """
@@ -485,7 +510,6 @@ def test_dcos_diagnostics_bundle_download_and_extract(dcos_api_session):
     _download_bundle_from_master(dcos_api_session, 0)
 
 
-@pytest.mark.supportedwindows
 def test_dcos_diagnostics_bundle_download_and_extract_from_another_master(dcos_api_session):
     """
     test bundle download and validate zip file

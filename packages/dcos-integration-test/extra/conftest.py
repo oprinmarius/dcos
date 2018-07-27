@@ -26,6 +26,7 @@ def dcos_api_session(dcos_api_session_factory):
     if expanded_config['exhibitor_admin_password_enabled'] == 'true':
         exhibitor_admin_password = expanded_config['exhibitor_admin_password']
 
+    print('Args are:' , *args)
     api = dcos_api_session_factory(
         exhibitor_admin_password=exhibitor_admin_password,
         **args)

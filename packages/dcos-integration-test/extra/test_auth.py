@@ -14,7 +14,7 @@ def auth_enabled():
     assert out in ['true', 'false'], 'Unknown ADMINROUTER_ACTIVATE_AUTH_MODULE state: {}'.format(out)
     return out == 'true'
 
-
+@pytest.mark.supportedwindows
 @pytest.mark.skipif(not auth_enabled(),
                     reason='Can only test adminrouter enforcement if auth is enabled')
 def test_adminrouter_access_control_enforcement(dcos_api_session, noauth_api_session):

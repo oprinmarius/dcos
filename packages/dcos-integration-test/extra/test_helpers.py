@@ -162,6 +162,8 @@ def marathon_test_app_linux(
                 app['container']['portMappings'][0]['labels'] = {'VIP_0': vip}
     if host_constraint is not None:
         app['constraints'] = [['hostname', 'CLUSTER', host_constraint]]
+    # Add Linux constraints
+    app['constraints'] = app.get('constraints', []) + [['os', 'LIKE', 'Linux']]
     return app, test_uuid
 
 

@@ -87,6 +87,24 @@ def test_if_marathon_app_can_be_deployed(dcos_api_session):
     """
     deploy_test_app_and_check(dcos_api_session, *test_helpers.marathon_test_app())
 
+@pytest.mark.supportedwindows
+@pytest.mark.supportedwindowsonly
+def test_if_marathon_app_can_be_deployed_windows(dcos_api_session):
+    """Marathon app deployment integration test
+
+    This test verifies that marathon app can be deployed on Windows, and that service points
+    returned by Marathon indeed point to the app that was deployed.
+
+    The application being deployed is a simple http server written in python.
+    Please test_server.py for more details.
+
+    This is done by assigning an unique UUID to each app and passing it to the
+    docker container as an env variable. After successful deployment, the
+    "GET /test_uuid" request is issued to the app. If the returned UUID matches
+    the one assigned to test - test succeeds.
+    """
+    deploy_test_app_and_check_windows(dcos_api_session, *test_helpers.marathon_test_app_windows())
+
 
 def test_if_docker_app_can_be_deployed(dcos_api_session):
     """Marathon app inside docker deployment integration test.
@@ -112,7 +130,6 @@ def test_if_docker_app_can_be_deployed_windows(dcos_api_session):
     """
     deploy_test_app_and_check_windows(dcos_api_session, *test_helpers.marathon_test_app_windows())
 
-
 @pytest.mark.parametrize('healthcheck', [
     marathon.Healthcheck.HTTP,
     marathon.Healthcheck.MESOS_HTTP,
@@ -128,7 +145,6 @@ def test_if_ucr_app_can_be_deployed(dcos_api_session, healthcheck):
         *test_helpers.marathon_test_app(
             container_type=marathon.Container.MESOS,
             healthcheck_protocol=healthcheck))
-
 
 def test_if_marathon_app_can_be_deployed_with_mesos_containerizer(dcos_api_session):
     """Marathon app deployment integration test using the Mesos Containerizer
@@ -147,6 +163,24 @@ def test_if_marathon_app_can_be_deployed_with_mesos_containerizer(dcos_api_sessi
     deploy_test_app_and_check(
         dcos_api_session,
         *test_helpers.marathon_test_app(container_type=marathon.Container.MESOS))
+
+@pytest.mark.supportedwindows
+@pytest.mark.supportedwindowsonly
+def test_if_marathon_app_can_be_deployed_with_mesos_containerizer_windows(dcos_api_session):
+    """Marathon app deployment integration test using the Mesos Containerizer
+
+    This test verifies that a Marathon app using the Mesos containerizer with
+    a Docker image can be deployed on Windows.
+
+    This is done by assigning an unique UUID to each app and passing it to the
+    docker container as an env variable. After successfull deployment, the
+    "GET /test_uuid" request is issued to the app. If the returned UUID matches
+    the one assigned to test - test succeds.
+
+    When port mapping is available (MESOS-4777), this test should be updated to
+    reflect that.
+    """
+    deploy_test_app_and_check_windows(dcos_api_session, *test_helpers.marathon_test_app_windows())
 
 
 def test_if_marathon_pods_can_be_deployed_with_mesos_containerizer(dcos_api_session):
@@ -184,7 +218,7 @@ def test_if_marathon_pods_can_be_deployed_with_mesos_containerizer(dcos_api_sess
         # Trivial app if it deploys, there is nothing else to check
         pass
 
-
+@pytest.mark.supportedwindows
 @pytest.mark.skipif(
     test_helpers.expanded_config.get('security') == 'strict',
     reason='See: https://jira.mesosphere.com/browse/DCOS-14760')

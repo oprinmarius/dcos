@@ -14,6 +14,8 @@ __contact__ = 'dcos-networking@mesosphere.io'
 
 DNS_ENTRY_UPDATE_TIMEOUT = 60  # in seconds
 
+# if pytest.config.getoption('--windows-only'):
+#     test_helpers.marathon_test_app = test_helpers.marathon_test_app_windows
 
 def _service_discovery_test(dcos_api_session, docker_network_bridge):
     """Service discovery integration test
@@ -237,6 +239,7 @@ def assert_service_discovery(dcos_api_session, app_definition, net_types):
         _ensure_dns_converged()
 
 
+@pytest.mark.supportedwindows
 def test_service_discovery_mesos_host(dcos_api_session):
     app_definition, test_uuid = test_helpers.marathon_test_app(
         container_type=marathon.Container.MESOS, healthcheck_protocol=marathon.Healthcheck.HTTP)
@@ -244,6 +247,7 @@ def test_service_discovery_mesos_host(dcos_api_session):
     assert_service_discovery(dcos_api_session, app_definition, [DNSHost])
 
 
+@pytest.mark.supportedwindows
 def test_service_discovery_mesos_overlay(dcos_api_session):
     app_definition, test_uuid = test_helpers.marathon_test_app(
         container_type=marathon.Container.MESOS,
@@ -254,6 +258,7 @@ def test_service_discovery_mesos_overlay(dcos_api_session):
     assert_service_discovery(dcos_api_session, app_definition, [DNSOverlay])
 
 
+@pytest.mark.supportedwindows
 def test_service_discovery_docker_host(dcos_api_session):
     app_definition, test_uuid = test_helpers.marathon_test_app(
         container_type=marathon.Container.DOCKER,
@@ -261,6 +266,7 @@ def test_service_discovery_docker_host(dcos_api_session):
     assert_service_discovery(dcos_api_session, app_definition, [DNSHost])
 
 
+@pytest.mark.supportedwindows
 def test_service_discovery_docker_bridge(dcos_api_session):
     app_definition, test_uuid = test_helpers.marathon_test_app(
         container_type=marathon.Container.DOCKER,
@@ -270,6 +276,7 @@ def test_service_discovery_docker_bridge(dcos_api_session):
     assert_service_discovery(dcos_api_session, app_definition, [DNSPortMap])
 
 
+@pytest.mark.supportedwindows
 def test_service_discovery_docker_overlay(dcos_api_session):
     app_definition, test_uuid = test_helpers.marathon_test_app(
         container_type=marathon.Container.DOCKER,
@@ -279,6 +286,7 @@ def test_service_discovery_docker_overlay(dcos_api_session):
     assert_service_discovery(dcos_api_session, app_definition, [DNSOverlay])
 
 
+@pytest.mark.supportedwindows
 def test_service_discovery_docker_overlay_port_mapping(dcos_api_session):
     app_definition, test_uuid = test_helpers.marathon_test_app(
         container_type=marathon.Container.DOCKER,
